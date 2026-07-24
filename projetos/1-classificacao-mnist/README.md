@@ -15,7 +15,7 @@ O modelo foi implementado como uma CNN sequencial, adequada para extrair padrõe
 - **Early Stopping:** configurado com `patience=3` e monitoramento de `val_loss` para interromper o treino assim que o desempenho na validação deixasse de melhorar.
 
 ## 4. Métrica de Avaliação
-- **Acurácia Final no Conjunto de Validação:** 98.62%
+- **Acurácia Final no Conjunto de Validação:** 98.72%
 
 ## 5. Otimização para Edge AI (TFLite)
 - **Técnica Utilizada:** aplicação da otimização padrão do conversor por meio de `tf.lite.Optimize.DEFAULT` antes da conversão.

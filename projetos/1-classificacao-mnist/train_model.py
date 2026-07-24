@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
+from tensorflow.keras.callbacks import EarlyStopping
 
 # ---------------------------------------------------------------------------
 # Projeto 1 — Classificação MNIST
@@ -16,4 +17,69 @@ from tensorflow.keras import layers
 #   7. Salvar o modelo treinado como "model.h5"
 # ---------------------------------------------------------------------------
 
-# insira seu código aqui
+def main():
+    print("1. Carregando o dataset MNIST...")
+    (x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+
+    print("2. Normalizando e ajustando o shape para (28, 28, 1)...")
+    x_train = x_train.astype('float32') / 255.0
+    x_test = x_test.astype('float32') / 255.0
+    
+    x_train = x_train[..., tf.newaxis]
+    x_test = x_test[..., tf.newaxis]
+
+    print("4. Construindo a CNN com 3 blocos e Dropout...")
+    model = keras.Sequential([
+        # Bloco 1
+        layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        
+        # Bloco 2
+        layers.Conv2D(64, (3, 3), activation='relu'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        
+        # Bloco 3
+        layers.Conv2D(128, (3, 3), activation='relu'),
+        layers.BatchNormalization(),
+        layers.MaxPooling2D((2, 2)),
+        
+        # Flatten e Dropout antes da saída
+        layers.Flatten(),
+        layers.Dropout(0.5),
+        layers.Dense(10, activation='softmax')
+    ])
+
+    model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+
+    print("5. Configurando o EarlyStopping...")
+    early_stop = EarlyStopping(
+        monitor='val_loss', 
+        patience=3, 
+        restore_best_weights=True
+    )
+
+    print("\n3 e 5. Iniciando o treinamento (com validation_split=0.2)...")
+    history = model.fit(
+        x_train, y_train, 
+        epochs=15, 
+        batch_size=64,
+        validation_split=0.2, 
+        callbacks=[early_stop]
+    )
+
+    print("\n6. Exibindo a acurácia de validação final...")
+    final_val_acc = history.history["val_accuracy"][-1]
+    print("="*40)
+    print(f"Acurácia de validação final: {final_val_acc * 100:.2f}%")
+    print("="*40)
+
+    print("\n7. Salvando o modelo treinado...")
+    model.save('model.h5')
+    print("Arquivo 'model.h5' salvo com sucesso na pasta atual!")
+
+if __name__ == "__main__":
+    main()
